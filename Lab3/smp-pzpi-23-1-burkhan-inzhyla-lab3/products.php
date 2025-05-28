@@ -16,6 +16,7 @@
       $error = false;
 
       if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+         $selected = false; 
           foreach ($_POST['product'] as $id => $count) {
               $count = (int)$count;
               if ($count < 0) {
@@ -27,11 +28,13 @@
           }
 
           if ($error) {
-              $errorMessage = "Перевірте будь ласка введені дані";
-          } else {
-              header("Location: products.php");
-              exit;
-          }
+            $errorMessage = "Перевірте будь ласка введені дані";
+        } elseif (!$selected) {
+            $errorMessage = "Виберіть будь ласка хоча б один товар";
+        } else {
+            header("Location: products.php");
+            exit;
+        }
       }
 
       $products = getProducts($pdo);
