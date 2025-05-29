@@ -65,11 +65,11 @@ $cart = getCart($pdo, $sessionId);
             $total += $item['sum'];
           ?>
             <tr>
-              <td><?= htmlspecialchars($item['product_id']) ?></td>
-              <td><?= htmlspecialchars($item['name']) ?></td>
-              <td>$<?= number_format($item['price'], 2) ?></td>
-              <td><?= htmlspecialchars($item['quantity']) ?></td>
-              <td>$<?= number_format($item['sum'], 2) ?></td>
+              <td><?= $item['product_id']?></td>
+              <td><?= $item['name'] ?></td>
+              <td>$<?= $item['price'] ?></td>
+              <td><?= $item['quantity'] ?></td>
+              <td>$<?= $item['sum'] ?></td>
               <td>
                 <form method="post" action="cart.php" style="display:inline;">
                   <input type="hidden" name="action" value="remove">
@@ -82,8 +82,8 @@ $cart = getCart($pdo, $sessionId);
           <?php endforeach; ?>
 
           <tr>
-            <td colspan="4"><strong>Total</strong></td>
-            <td colspan="2"><strong>$<?= number_format($total, 2) ?></strong></td>
+            <td colspan="4"><p>Total</p></td>
+            <td colspan="2"><p>$<?= $total ?></p></td>
           </tr>
         </table>
 
