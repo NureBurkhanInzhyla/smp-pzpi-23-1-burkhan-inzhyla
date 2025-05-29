@@ -22,6 +22,9 @@ input[type="submit"]{
     border: solid 0.1px;
     padding: 6px 21px;
 }
+.cartBody p{
+    font-weight: 600;
+}
 
 .product {
     display: flex;
