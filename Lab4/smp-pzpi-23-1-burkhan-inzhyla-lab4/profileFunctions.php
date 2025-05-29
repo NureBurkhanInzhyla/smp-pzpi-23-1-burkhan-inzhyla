@@ -41,7 +41,7 @@
     function getUserProfile(PDO $pdo, string $username): array {
         $stmt = $pdo->prepare("SELECT username, name, surname, birthday, description, profile_image FROM User WHERE username = ?");
         $stmt->execute([$username]);
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     function updateUserProfile(PDO $pdo, string $username, array $data): bool {
