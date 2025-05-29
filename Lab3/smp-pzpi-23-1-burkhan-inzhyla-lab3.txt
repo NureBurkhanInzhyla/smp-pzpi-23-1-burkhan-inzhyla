@@ -1,12 +1,49 @@
-3.2 Завдання до лабораторної роботи
+Міністерство освіти та науки України 
+Харківський національний університет радіоелектроніки 
+Кафедра програмної інженерії 
+
+
+
+
+
+
+ЗВІТ З ЛАБОРАТОРНОЇ РОБОТИ №3
+з дисципліни «Скриптові мови програмування»
+
+
+
+
+Виконала:                                                                                            
+Бурхан Інжила                                                                               
+Студентка групи ПЗПІ-23-1   
+
+Перевірив:                                                            
+Ст.викл. каф. ПІ
+Сокорчук І.П.
+
+
+
+
+
+
+Харків — 2025
+
+3 ЛАБОРАТОРНА РОБОТА
+1 ІСТОРІЯ ЗМІН	
+№ Дата        Версія звіту  Опис змін та виправлень
+1 29.05.2025  1.0           Створено звіт
+
+2 ЗАВДАННЯ
 Результатом лабораторної роботи має бути робочий сайт з інтернет магазином. 
-3.3 Опис виконаної роботи
+
+3 ОПИС ВИКОНАНОЇ РОБОТИ
 Після запуску сайту користувач автоматично потрапляє на сторінку products.php. Це реалізовано через файл index.php, в якому міститься це перенаправлення [рядки 1-3, Додаток В.5].
 Усі товари зчитуються з бази даних і виводяться у вигляді окремих блоків з назвою, ціною й полем для введення кількості. Користувач може вказати бажану кількість для кожного товару й натиснути кнопку додавання до кошика. Дані передаються методом POST [рядки 53-62, Додаток В.1], і на сервері перевіряється, чи хоча б один товар було вибрано [рядки 12-18, Додаток В.3]. Якщо так – інформація зберігається у базу даних у таблицю Cart, що прив’язана до унікального session_id користувача. Якщо ж нічого не вибрано – виводиться повідомлення про помилку. 
 Сторінка cart.php відповідає за відображення поточного вмісту кошика. Тут реалізовано таблицю, де кожен рядок – це товар, доданий до кошика [рядки 74-94, Додаток В.2]. Відображається його назва, ціна, кількість, загальна сума за одиницями та кнопка для видалення. Користувач може видалити окремий товар або очистити кошик повністю – для цього передбачено дві форми з кнопками [рядки 102-115, Додаток В.2]. Усі ці дії обробляються на сервері залежно від типу запиту (action = remove або clear). Сума усіх товарів підсумовується й виводиться наприкінці таблиці. 
 
-Висновки:
+4 ВИСНОВКИ
 Під час виконання роботи було закріплено практичні навички роботи з сесіями у PHP, формами та обробкою POST-запитів, підключенням і використанням бази даних через PDO. Також опрацьовано принципи організації структури сайту: розділення коду на логічні частини та повторне використання коду. 
+
 ДОДАТОК А
 Відеозапис
 Посилання на відеозапис презентації результатів лабораторної роботи: https://youtu.be/Syicpi8JLGw
@@ -26,3 +63,264 @@
 07:44 — Опис обробки методу post для очищення кошика
 08:00 — Опис функції для очищення/видалення кошику у базі даних
 08:22 — Демонстрація роботи програми
+
+
+ДОДАТОК В
+Програмний код
+В.1 – Сторінка з товарами
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab3/smp-pzpi-23-1-burkhan-inzhyla-lab3/products.php
+1 <!DOCTYPE html>
+2 <html lang="ru">
+3 <head>
+4   <meta charset="UTF-8">
+5   <title>Products</title>
+6   <style>
+7    
+8     .product { margin: 10px 0; }
+9   </style>
+10    <?php
+11       session_start();
+12       require 'functionsDB.php';
+13 
+14       $pdo = db();
+15       $sessionId = session_id();
+16       $products = getProducts($pdo);
+17 
+18       $selected = false; 
+19 
+20       if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+21           foreach ($_POST['product'] as $id => $count) {
+22               if ($count > 0) {
+23                   addToCart($pdo, $sessionId, (int)$id, $count);
+24                   $selected = true; 
+25               }
+26           }
+27 
+28           if (!$selected) {
+29             $errorMessage = "Виберіть будь ласка хоча б один товар";
+30         } else {
+31             header("Location: products.php");
+32             exit;
+33         }
+34       }
+35 
+36     ?>
+37   <link rel="preconnect" href="https://fonts.googleapis.com">
+38   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+39   <link href="https://fonts.googleapis.com/css2?family=Agdasima:wght@400;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Radley:ital@0;1&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+40   <link rel="stylesheet" href="Lab3Styles.css">
+41 </head>
+42 <body>
+43   <header>
+44       <?php
+45           require_once 'header.html';
+46       ?>
+47   </header>
+48 
+49   <div class="productsBlock">
+50   <?php if (isset($errorMessage)): ?>
+51     <p style="color:red;"><?= $errorMessage ?></p>
+52   <?php endif; ?>
+53   <form action="products.php" method="post">
+54     <?php foreach ($products as $product): ?>
+55       <div class="product">
+56         <span><?= $product['name'] ?></span>
+57         <span>$<?= $product['price'] ?></span>
+58         <input type="number" name="product[<?= $product['product_id'] ?>]" min="0" value="0">
+59       </div>
+60     <?php endforeach; ?>
+61     <button type="submit">Add to cart</button>
+62   </form>
+63 
+64 </div>
+65 
+66 <?php require_once 'footer.html'; ?>
+67   
+68 </body>
+69 </html>
+
+
+
+
+В.2 – Сторінка кошика
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab3/smp-pzpi-23-1-burkhan-inzhyla-lab3/cart.php
+1 <?php
+2 session_start();
+3 require_once 'cartFunctions.php';
+4 require_once 'functionsDB.php';
+5 
+6 $pdo = db();
+7 $sessionId = session_id();
+8 
+9 $cart = getCart($pdo, $sessionId);
+10 
+11 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+12     if ($_POST['action'] === 'remove') {
+13         $productId = (int)$_POST['product_id'];
+14         removeFromCart($pdo, $sessionId, $productId);
+15     } elseif ($_POST['action'] === 'clear') {
+16         clearCart($pdo, $sessionId);
+17     }
+18   header("Location: cart.php");
+19    exit;
+20 
+21 }
+22 ?>
+23 
+24 <!DOCTYPE html>
+25 <html lang="ru">
+26 <head>
+27   <meta charset="UTF-8">
+28   <title>Cart</title>
+29   <style>
+30     body { font-family: "Montserrat"; }
+31     table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+32     th, td { border: 1px solid black; padding: 10px; text-align: center; }
+33     .buttons { text-align: center; margin: 20px; }
+34     .nav, .footer {
+35       display: flex;
+36       justify-content: space-around;
+37       padding: 10px;
+38       background-color: #f0f0f0;
+39     }
+40     a {
+41       text-decoration: none;
+42       color: black;
+43     }
+44   </style>
+45   <link rel="preconnect" href="https://fonts.googleapis.com">
+46   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+47   <link rel="stylesheet" href="Lab3Styles.css">
+48   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+49 </head>
+50 <body>
+51 
+52  <header>
+53       <?php
+54           require_once 'header.html';
+55       ?>
+56   </header>
+57 
+58 
+59   <div class="cartBody">
+60 
+61       <?php if (empty($cart)): ?>
+62         <p style="text-align:center;">Ще не вибрано товари. <a href="products.php">Перейти до покупок</a></p>
+63       <?php else: ?>
+64         <table>
+65           <tr>
+66             <th>id</th>
+67             <th>name</th>
+68             <th>price</th>
+69             <th>count</th>
+70             <th>sum</th>
+71             <th>delete</th>
+72           </tr>
+73 
+74           <?php
+75           $total = 0;
+76           foreach ($cart as $item):
+77             $total += $item['sum'];
+78           ?>
+79             <tr>
+80               <td><?= $item['product_id']?></td>
+81               <td><?= $item['name'] ?></td>
+82               <td>$<?= $item['price'] ?></td>
+83               <td><?= $item['quantity'] ?></td>
+84               <td>$<?= $item['sum'] ?></td>
+85               <td>
+86                 <form method="post" action="cart.php" style="display:inline;">
+87                   <input type="hidden" name="action" value="remove">
+88                   <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>">
+89                   <button type="submit">🗑️</button>
+90                 </form>
+91 
+92               </td>
+93             </tr>
+94           <?php endforeach; ?>
+95 
+96           <tr>
+97             <td colspan="4"><p>Total</p></td>
+98             <td colspan="2"><p>$<?= $total ?></p></td>
+99           </tr>
+100         </table>
+101 
+102         <div class="buttons">
+103          <form method="post" action="cart.php">
+104             <input type="hidden" name="action" value="clear">
+105             <button type="submit">Clear</button>
+106           </form>
+107 
+108 
+109 
+110           <form action="checkout.php" method="post" style="display:inline;">
+111             <button type="submit">Pay</button>
+112           </form>
+113         </div>
+114       <?php endif; ?>
+115       </div>
+116   <?php require_once 'footer.html'; ?>
+117 
+118 
+119 </body>
+120 </html>
+121 
+В.3 – Файл допоміжних функцій для сторінки продуктів
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab3/smp-pzpi-23-1-burkhan-inzhyla-lab3/functionsDB.php
+1 <?php 
+2 
+3 function db(): PDO {
+4    return  new PDO('sqlite:lab3.db');
+5 }
+6 
+7 function getProducts(PDO $pdo): array {
+8     return $pdo->query("SELECT * FROM Product")->fetchAll(PDO::FETCH_ASSOC);
+9 }
+10 
+11 function addToCart(PDO $pdo, string $sessionId, int $productId, int $quantity): void {
+12     $stmt = $pdo->prepare("SELECT * FROM Cart WHERE session_id = ? AND product_id = ?");
+13     $stmt->execute([$sessionId, $productId]);
+14     $item = $stmt->fetch();
+15 
+16     if ($item) {
+17         $stmt = $pdo->prepare("UPDATE Cart SET quantity = quantity + ? WHERE session_id = ? AND product_id = ?");
+18         $stmt->execute([$quantity, $sessionId, $productId]);
+19     } else {
+20         $stmt = $pdo->prepare("INSERT INTO Cart (session_id, product_id, quantity) VALUES (?, ?, ?)");
+21         $stmt->execute([$sessionId, $productId, $quantity]);
+22     }
+23 }
+24 
+25 ?>
+В.4 – Файл допоміжних функцій для сторінки кошику
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab3/smp-pzpi-23-1-burkhan-inzhyla-lab3/cartFunctions.php
+1 <?php
+2 require_once 'functionsDB.php';
+3 
+4 function removeFromCart(PDO $pdo, string $sessionId, int $productId): void {
+5     $stmt = $pdo->prepare("DELETE FROM Cart WHERE session_id = ? AND product_id = ?");
+6     $stmt->execute([$sessionId, $productId]);
+7 }
+8 function clearCart(PDO $pdo, string $sessionId): void {
+9     $stmt = $pdo->prepare("DELETE FROM Cart WHERE session_id = ?");
+10     $stmt->execute([$sessionId]);
+11 }
+12 
+13 function getCart(PDO $pdo, string $sessionId): array {
+14     $stmt = $pdo->prepare("
+15         SELECT p.product_id, p.name, p.price, c.quantity, p.price * c.quantity AS sum
+16         FROM Cart c
+17         JOIN Product p ON c.product_id = p.product_id
+18         WHERE c.session_id = ?
+19     ");
+20     $stmt->execute([$sessionId]);
+21     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+22 }
+23 
+24 ?>
+25 
+В.5 – Файл входу
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab3/smp-pzpi-23-1-burkhan-inzhyla-lab3/index.php
+1 <?php
+2 header("Location: products.php");
+3 exit;
