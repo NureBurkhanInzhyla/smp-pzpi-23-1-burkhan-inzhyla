@@ -13,23 +13,19 @@
 
       $pdo = db();
       $sessionId = session_id();
-      $error = false;
+      $products = getProducts($pdo);
+
+      $selected = false; 
 
       if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-         $selected = false; 
           foreach ($_POST['product'] as $id => $count) {
-              $count = (int)$count;
-              if ($count < 0) {
-                  $error = true;
-                  break;
-              } elseif ($count > 0) {
+              if ($count > 0) {
                   addToCart($pdo, $sessionId, (int)$id, $count);
+                  $selected = true; 
               }
           }
 
-          if ($error) {
-            $errorMessage = "Перевірте будь ласка введені дані";
-        } elseif (!$selected) {
+          if (!$selected) {
             $errorMessage = "Виберіть будь ласка хоча б один товар";
         } else {
             header("Location: products.php");
@@ -37,7 +33,6 @@
         }
       }
 
-      $products = getProducts($pdo);
     ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,13 +48,13 @@
 
   <div class="productsBlock">
   <?php if (isset($errorMessage)): ?>
-    <p style="color:red;"><?= htmlspecialchars($errorMessage) ?></p>
+    <p style="color:red;"><?= $errorMessage ?></p>
   <?php endif; ?>
   <form action="products.php" method="post">
     <?php foreach ($products as $product): ?>
       <div class="product">
-        <span><?= htmlspecialchars($product['name']) ?></span>
-        <span>$<?= number_format($product['price'], 2) ?></span>
+        <span><?= $product['name'] ?></span>
+        <span>$<?= $product['price'] ?></span>
         <input type="number" name="product[<?= $product['product_id'] ?>]" min="0" value="0">
       </div>
     <?php endforeach; ?>
