@@ -1,69 +1,119 @@
+<?php
+session_start();
+require_once 'cartFunctions.php';
+require_once 'functionsDB.php';
+
+$pdo = db();
+$sessionId = session_id();
+
+$cart = getCart($pdo, $sessionId);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($_POST['action'] === 'remove') {
+        $productId = (int)$_POST['product_id'];
+        removeFromCart($pdo, $sessionId, $productId);
+    } elseif ($_POST['action'] === 'clear') {
+        clearCart($pdo, $sessionId);
+    }
+   exit;
+
+}
+?>
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Products</title>
+  <title>Cart</title>
   <style>
-   
-    .product { margin: 10px 0; }
+    body { font-family: "Montserrat"; }
+    table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid black; padding: 10px; text-align: center; }
+    .buttons { text-align: center; margin: 20px; }
+    .nav, .footer {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+      background-color: #f0f0f0;
+    }
+    a {
+      text-decoration: none;
+      color: black;
+    }
   </style>
-   <?php
-      session_start();
-      require 'functionsDB.php';
-
-      $pdo = db();
-      $sessionId = session_id();
-      $selected = false; 
-
-      if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-          foreach ($_POST['product'] as $id => $count) {
-              $count = (int)$count;
-              if ($count > 0) {
-                  addToCart($pdo, $sessionId, (int)$id, $count);
-                  $selected = true; 
-              }
-          }
-
-          if (!$selected) {
-            $errorMessage = "Виберіть будь ласка хоча б один товар";
-        } else {
-            header("Location: products.php");
-            exit;
-        }
-      }
-
-      $products = getProducts($pdo);
-    ?>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Agdasima:wght@400;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Radley:ital@0;1&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="Lab3Styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
+
+ <header>
       <?php
           require_once 'header.html';
       ?>
   </header>
 
-  <div class="productsBlock">
-  <?php if (isset($errorMessage)): ?>
-    <p style="color:red;"><?= $errorMessage ?></p>
-  <?php endif; ?>
-  <form action="products.php" method="post">
-    <?php foreach ($products as $product): ?>
-      <div class="product">
-        <span><?= $product['name'] ?></span>
-        <span>$<?= $product['price'] ?></span>
-        <input type="number" name="product[<?= $product['product_id'] ?>]" min="0" value="0">
+
+  <div class="cartBody">
+
+      <?php if (empty($cart)): ?>
+        <p style="text-align:center;">Ще не вибрано товари. <a href="products.php">Перейти до покупок</a></p>
+      <?php else: ?>
+        <table>
+          <tr>
+            <th>id</th>
+            <th>name</th>
+            <th>price</th>
+            <th>count</th>
+            <th>sum</th>
+            <th>delete</th>
+          </tr>
+
+          <?php
+          $total = 0;
+          foreach ($cart as $item):
+            $total += $item['sum'];
+          ?>
+            <tr>
+              <td><?= $item['product_id']?></td>
+              <td><?= $item['name'] ?></td>
+              <td>$<?= $item['price'] ?></td>
+              <td><?= $item['quantity'] ?></td>
+              <td>$<?= $item['sum'] ?></td>
+              <td>
+                <form method="post" action="cart.php" style="display:inline;">
+                  <input type="hidden" name="action" value="remove">
+                  <input type="hidden" name="product_id" value="<?= $item['product_id'] ?>">
+                  <button type="submit">🗑️</button>
+                </form>
+
+              </td>
+            </tr>
+          <?php endforeach; ?>
+
+          <tr>
+            <td colspan="4"><p>Total</p></td>
+            <td colspan="2"><p>$<?= $total ?></p></td>
+          </tr>
+        </table>
+
+        <div class="buttons">
+         <form method="post" action="cart.php">
+            <input type="hidden" name="action" value="clear">
+            <button type="submit">Clear</button>
+          </form>
+
+
+
+          <form action="checkout.php" method="post" style="display:inline;">
+            <button type="submit">Pay</button>
+          </form>
+        </div>
+      <?php endif; ?>
       </div>
-    <?php endforeach; ?>
-    <button type="submit">Add to cart</button>
-  </form>
+  <?php require_once 'footer.html'; ?>
 
-</div>
 
-<?php require_once 'footer.html'; ?>
-  
 </body>
 </html>
