@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($_POST['action'] === 'clear') {
         clearCart($pdo, $sessionId);
     }
+  header("Location: cart.php");
    exit;
 
 }
