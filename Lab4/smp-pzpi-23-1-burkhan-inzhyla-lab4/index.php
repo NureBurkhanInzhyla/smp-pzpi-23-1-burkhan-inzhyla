@@ -3,31 +3,16 @@ session_start();
 
 $page = $_GET['page'] ?? '';
 
-switch ($page) {
-    case 'login':
-        require_once("login.php");
-        break;
-    default:
-        if (!isset($_SESSION['user'])) {
-            require_once("page404.php");
-            exit;
-        }
+$publicPages = ['login'];
+$privatePages = ['cart', 'profile', 'products'];
 
-        switch ($page) {
-            case 'cart':
-                require_once("cart.php");
-                break;
-            case 'profile':
-                require_once("profile.php");
-                break;
-            case 'products':
-                require_once("products.php");
-                break;
-            default:
-                require_once("page404.php");
-                break;
-        }
-        break;
+if (in_array($page, $publicPages)) {
+    require_once("$page.php");
+} elseif (isset($_SESSION['user']) && in_array($page, $privatePages)) {
+    require_once("$page.php");
+} else {
+    require_once("page404.php");
 }
+
 
 ?>
