@@ -1,0 +1,152 @@
+body { 
+    font-family: "Montserrat"; 
+}
+
+a{
+    text-decoration: none;
+}
+.productsBlock {
+    max-width: 400px;
+    padding-top: 70px;
+    margin: 0 auto;
+    font-size: 19px;
+}
+.cartBody{
+    padding-top: 70px;
+    margin: 0 auto;
+    font-size: 18px;
+
+}
+input[type="submit"]{
+    border-radius: 7px;
+    border: solid 0.1px;
+    padding: 6px 21px;
+}
+.cartBody p{
+    font-weight: 600;
+}
+
+.product {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 23px;
+}
+.productQuantity{
+    width: -webkit-fill-available;
+    margin: 0px 28px;
+    border-radius: 6px;
+    height: 21px;
+    border: solid 0.1px;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+  appearance: auto;
+}
+
+.nav{ 
+    position: fixed;
+    top: 0;
+    width: 100%;
+    display: flex; 
+    justify-content: space-around; 
+    padding: 10px; 
+    font-size: 19px;
+    background-color: #f0f0f0; 
+}
+.footer { 
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex; 
+    font-size: 19px;
+    justify-content: space-around; 
+    padding: 10px; 
+    background-color: #f0f0f0; 
+}
+button{
+    display: block;
+    margin: 10px auto 0;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 7px 10px;
+    font-size: 15px;
+    border: solid 0.1px;
+}
+.loginBody{
+    max-width: 400px;
+    padding-top: 100px;
+    margin: 0 auto;
+    text-align: start;
+}
+.profileBody{
+    display: flex;
+    justify-content: space-between;
+    width: 60%;
+    margin: 0 auto;
+    padding-top: 80px;
+    font-size: 20px;
+
+}
+.profileLeft {
+    flex: 0 0 59%;
+
+}
+
+.profileLeft h2 {
+    margin-bottom: 20px;
+}
+
+.profileImage img {
+    display: block;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+.profileRight {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-top:70px;
+    align-items: start;
+}
+.profileRight button{
+    display: block;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 7px 10px;
+    font-size: 15px;
+    border: solid 0.1px;
+}
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formRow label {
+  margin-bottom: 5px;
+}
+input[type="text"], input[type="date"]{
+    font-size: 18px;
+    margin-left: 5px;
+    border-radius: 5px;
+}
+textarea{
+    font-size: 18px;
+    border-radius: 5px;
+}
+.loginBody input[type="text"]{
+    font-size: 18px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    margin-left:10px;
+}
+
+.loginBody input[type="password"]{
+    font-size: 18px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    margin-left:12px;
+}
