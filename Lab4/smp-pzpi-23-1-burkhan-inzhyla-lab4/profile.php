@@ -42,21 +42,19 @@
 
         $profile_image_path = $user['profile_image'] ?? '';
 
-        if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = 'uploads/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true); 
-            }
-            $tmpName = $_FILES['profile_image']['tmp_name'];
-            $fileName = basename($_FILES['profile_image']['name']);
-            $targetFile = $uploadDir . uniqid() . "_" . $fileName;
+         if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = 'uploads/';
+               
+                $tmpName = $_FILES['profile_image']['tmp_name'];
+                $fileName = basename($_FILES['profile_image']['name']);
+                $targetFile = $uploadDir . uniqid() . "_" . $fileName;
 
-            if (move_uploaded_file($tmpName, $targetFile)) {
-                $profile_image_path = $targetFile;
-            } else {
-                $error = "Error loading image";
-            }
-        }
+                if (move_uploaded_file($tmpName, $targetFile)) {
+                    $profile_image_path = $targetFile;
+                } else {
+                    $error = "Error loading image";
+                }
+            }   
 
         if (!$error) {
                 $data = [

@@ -7,7 +7,7 @@
     $error='';
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (loginOrRegister($pdo, $_POST['username'], $_POST['password'])) {
-            header("Location: index.php?page=products");
+            header("Location: index.php?page=profile");
             exit;
         }
         else{

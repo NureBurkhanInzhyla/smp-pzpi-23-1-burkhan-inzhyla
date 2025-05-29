@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="cartBody">
 
       <?php if (empty($cart)): ?>
-        <p style="text-align:center;">Ще не вибрано товари. <a href="products.php">Перейти до покупок</a></p>
+        <p style="text-align:center;">Ще не вибрано товари. <a href="index.php?page=products">Перейти до покупок</a></p>
       <?php else: ?>
         <table>
           <tr>

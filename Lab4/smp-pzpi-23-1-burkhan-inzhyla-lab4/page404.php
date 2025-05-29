@@ -15,8 +15,9 @@
         require_once 'header.php';
     ?>
 </header>
-  <h2 style="text-align:center; margin-top: 100px;font-size:26px;">Please <a href="index.php?page=login">Login </a> first</h2>
-<?php require_once 'footer.php'; ?>
+
+    <h2 style="text-align:center; margin-top: 100px;font-size:26px;">Please <a href="index.php?page=login">Login </a> first</h2>
+    <?php require_once 'footer.php'; ?>
  
 </body>
 </html>

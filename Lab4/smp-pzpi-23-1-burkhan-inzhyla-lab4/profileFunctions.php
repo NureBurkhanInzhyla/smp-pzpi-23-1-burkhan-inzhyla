@@ -56,9 +56,7 @@
             $data['profile_image'],
             $username
         ]);
-           if (!$result) {
-        print_r($stmt->errorInfo());
-    }
+       
     }
 
 ?>

@@ -28,7 +28,7 @@
           if (!$selected) {
             $errorMessage = "Виберіть будь ласка хоча б один товар";
         } else {
-            header("Location: products.php");
+            header("Location: index.php?page=products");
             exit;
         }
       }
