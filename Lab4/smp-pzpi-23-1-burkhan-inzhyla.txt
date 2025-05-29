@@ -1,13 +1,38 @@
+Міністерство освіти та науки України 
+Харківський національний університет радіоелектроніки 
+Кафедра програмної інженерії 
+
+
+
+
+
+
+ЗВІТ З ЛАБОРАТОРНОЇ РОБОТИ №4
+з дисципліни «Скриптові мови програмування»
+
+
+
+
+Виконала:                                                                                            
+Бурхан Інжила                                                                               
+Студентка групи ПЗПІ-23-1   
+
+Перевірив:                                                            
+Ст.викл. каф. ПІ
+Сокорчук І.П.
+
+
+
+
+
+
+Харків — 2025
+
 4 СТРУКТУРУВАННЯ КОДУ, РОБОТА 3 ФОРМАМИ, АВТЕНТИФІКАЦІЯ ТА АВТОРИЗАЦІЯ 
-4.1 Історія змін
-№
-Дата
-Версія звіту
-Опис змін та виправлень
-1
-29.05.2025
-1.0
-Створено звіт
+
+1 ІСТОРІЯ ЗМІН	
+№ Дата        Версія звіту  Опис змін та виправлень
+1 29.05.2025  1.0           Створено звіт
 
 2 ЗАВДАННЯ 
 Навчитися масштабувати код програм, працювати з формами, здійснювати авторизацію та обмеження прав доступу. 
@@ -31,3 +56,326 @@
 02:47 — Опис функції loginOrRegister()
 04:15 — Опис роботи сторінки профілю та обробки post запиту
 08:44 — Опис функції updateUserProfile()
+
+ДОДАТОК В
+Програмний код
+В.1 – Сторінка з входу
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab4/smp-pzpi-23-1-burkhan-inzhyla-lab4/login.php
+1 <?php 
+2 
+3     require_once "profileFunctions.php";
+4     require_once "functionsDB.php";
+5     $pdo = db();
+6 
+7     $error='';
+8     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+9         if (loginOrRegister($pdo, $_POST['username'], $_POST['password'])) {
+10             header("Location: index.php?page=products");
+11             exit;
+12         }
+13         else{
+14             $error = "False username or password";
+15         }
+16 
+17     }
+18 ?>
+19 
+20 <!DOCTYPE html>
+21 <html lang="uk">
+22 <head>
+23   <meta charset="UTF-8">
+24   <link rel="preconnect" href="https://fonts.googleapis.com">
+25   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+26   <link href="https://fonts.googleapis.com/css2?family=Agdasima:wght@400;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Radley:ital@0;1&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+27   <link rel="stylesheet" href="Lab3Styles.css">
+28 </head>
+29 <body>
+30      <header>
+31       <?php
+32           require_once 'header.php';
+33       ?>
+34   </header>
+35   <div class="loginBody">
+36     <?php if ($error): ?>
+37         <p style="color:red"><?= $error ?></p>
+38     <?php endif; ?>
+39     <form method="post" action="login.php">
+40         <label>Username: <input type="text" name="username" required></label><br>
+41         <label>Password: <input type="password" name="password" required></label><br>
+42         <button type="submit">Login</button>
+43     </form>
+44   </div>
+45   <?php require_once 'footer.php'; ?>
+46 
+47 </body>
+48 </html>
+49 
+В.2 – Сторінка профілю
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab3/smp-pzpi-23-1-burkhan-inzhyla-lab3/cart.php
+1 
+2 <?php 
+3     if (session_status() === PHP_SESSION_NONE) {
+4         session_start();
+5     }
+6     require_once "functionsDB.php";
+7     require_once "profileFunctions.php";
+8 
+9     $pdo = db();
+10     $username = $_SESSION['user'];
+11     $error = '';
+12     $success = '';
+13 
+14     $user = getUserProfile($pdo, $username);
+15     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+16         if (
+17             empty($_POST['name']) ||
+18             empty($_POST['surname']) ||
+19             empty($_POST['birthday']) ||
+20             empty($_POST['description'])
+21         ) {
+22             $error = 'Всі поля мають бути заповнені.';
+23         }
+24         elseif (!is_string($_POST['name']) || strlen(trim($_POST['name'])) <= 1) {
+25             $error = 'Ім\'я має містити більше одного символу.';
+26         }
+27         elseif (!is_string($_POST['surname']) || strlen(trim($_POST['surname'])) <= 1) {
+28             $error = 'Прізвище має містити більше одного символу.';
+29         }
+30         elseif (isset($_POST['birthday'])) {
+31             $birthday = new DateTime($_POST['birthday']);
+32             $today = new DateTime();
+33             $ageInterval = $today->diff($birthday);
+34             if ($ageInterval->y < 16) {
+35                 $error = 'Користувач має бути не молодший за 16 років.';
+36             }
+37         }
+38 
+39         elseif (strlen(trim($_POST['description'])) < 50) {
+40             $error = 'Стисла інформація має містити не менше 50 символів.';
+41         }
+42 
+43         $profile_image_path = $user['profile_image'] ?? '';
+44 
+45         if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
+46             $uploadDir = 'uploads/';
+47             if (!is_dir($uploadDir)) {
+48                 mkdir($uploadDir, 0755, true); 
+49             }
+50             $tmpName = $_FILES['profile_image']['tmp_name'];
+51             $fileName = basename($_FILES['profile_image']['name']);
+52             $targetFile = $uploadDir . uniqid() . "_" . $fileName;
+53 
+54             if (move_uploaded_file($tmpName, $targetFile)) {
+55                 $profile_image_path = $targetFile;
+56             } else {
+57                 $error = "Error loading image";
+58             }
+59         }
+60 
+61         if (!$error) {
+62                 $data = [
+63                     'name' => $_POST['name'] ?? '',
+64                     'surname' => $_POST['surname'] ?? '',
+65                     'birthday' => $_POST['birthday'] ?? null,
+66                     'profile_image' => $profile_image_path,
+67                     'description' => $_POST['description'] ?? '',
+68                 ];
+69 
+70                 if (updateUserProfile($pdo, $username, $data)) {
+71                     $success = "Profile is updated";
+72                     $user = getUserProfile($pdo, $username); 
+73                 } else {
+74                     $error = "Failed updating profile.";
+75                 }
+76         }
+77         
+78 
+79     }
+80 
+81 ?>
+82 <!DOCTYPE html>
+83 <html lang="ru">
+84 <head>
+85   <meta charset="UTF-8">
+86   <title>Products</title>
+87   <style>
+88    
+89     .product { margin: 10px 0; }
+90   </style>
+91 
+92 
+93   <link rel="preconnect" href="https://fonts.googleapis.com">
+94   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+95   <link href="https://fonts.googleapis.com/css2?family=Agdasima:wght@400;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Radley:ital@0;1&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+96   <link rel="stylesheet" href="Lab3Styles.css">
+97 </head>
+98 <body>
+99   <header>
+100       <?php
+101           require_once 'header.php';
+102       ?>
+103   </header>
+104   <form method="post" action="profile.php" enctype="multipart/form-data">
+105     <div class="profileBody">
+106         <div class="profileLeft">
+107             <h2 style="color:#363636;">Профіль користувача: <?= ($username) ?></h2>
+108 
+109             <?php if ($error): ?>
+110                 <p style="color:red;"><?= $error ?></p>
+111             <?php endif; ?>
+112 
+113             <?php if ($success): ?>
+114                 <p style="color:green;"><?= $success ?></p>
+115             <?php endif; ?>
+116 
+117             <div class="profileImage">
+118                 <label>Profile image:</label><br/>
+119                 <?php if (!empty($user['profile_image'])): ?>
+120                     <img style="margin-top:5px;" src="<?= ($user['profile_image']) ?>" alt="Profile Image" width="150" /><br/>
+121                 <?php endif; ?>
+122                 <input type="file" name="profile_image" accept="image/*" />
+123             </div>
+124         </div>
+125 
+126         <div class="profileRight">
+127             <div>
+128                 <label>Name:</label>
+129                 <input type="text" name="name" value="<?= ($user['name'] ?? '') ?>" />
+130             </div>
+131 
+132             <div>
+133                 <label>Surname:</label>
+134                 <input type="text" name="surname" value="<?= ($user['surname'] ?? '') ?>" />
+135             </div>
+136 
+137             <div>
+138                 <label>Date of Birth:</label>
+139                 <input type="date" name="birthday" value="<?= ($user['birthday'] ?? '') ?>" />
+140             </div>
+141 
+142            <div class="formRow">
+143                 <label for="description">Description:</label>
+144                 <textarea id="description" name="description" rows="4"><?= $user['description'] ?? '' ?></textarea>
+145             </div>
+146 
+147 
+148             <div>
+149                 <button type="submit">Save</button>
+150             </div>
+151         </div>
+152     </div>
+153 </form>
+154 
+155 
+156 <?php require_once 'footer.php'; ?>
+157   
+158 </body>
+159 </html>
+В.3 – Файл допоміжних функцій для сторінки профілю
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab4/smp-pzpi-23-1-burkhan-inzhyla-lab4/page404.php
+1 <?php 
+2     if (session_status() === PHP_SESSION_NONE) {
+3         session_start();
+4     }
+5 
+6     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
+7         session_unset();
+8         session_destroy();
+9         header("Location: index.php?page=login");
+10         exit;
+11     }
+12 
+13     function loginOrRegister (PDO $pdo, string $username, string $password): bool{
+14         $stmt = $pdo->prepare("SELECT * FROM User WHERE username = ?");
+15         $stmt->execute([$username]);
+16         $user = $stmt->fetch(PDO::FETCH_ASSOC);
+17 
+18         if($user){
+19             if (password_verify($password, $user['password'])) {
+20                 $_SESSION['user'] = $user['username'];
+21                 $_SESSION['login_time'] = date("Y-m-d H:i:s");
+22                 $stmt = $pdo->prepare("UPDATE User SET login_time = ? WHERE username = ?");
+23                 $stmt->execute([date("Y-m-d H:i:s"), $user['username']]);
+24 
+25                 return true;
+26             } else {
+27                 return false;
+28             }
+29         }
+30         else {
+31             $hash = password_hash($password, PASSWORD_DEFAULT);
+32             $stmt = $pdo->prepare("INSERT INTO User (username, password, login_time) VALUES (?, ?, ?)");
+33             $stmt->execute([$username, $hash, date("Y-m-d H:i:s")]);
+34 
+35             $_SESSION['user'] = $username;
+36             $_SESSION['login_time'] = date("Y-m-d H:i:s");
+37             return true;
+38         }
+39     }
+40 
+41     function getUserProfile(PDO $pdo, string $username): array {
+42         $stmt = $pdo->prepare("SELECT username, name, surname, birthday, description, profile_image FROM User WHERE username = ?");
+43         $stmt->execute([$username]);
+44         return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+45     }
+46 
+47     function updateUserProfile(PDO $pdo, string $username, array $data): bool {
+48         $stmt = $pdo->prepare("
+49             UPDATE User SET name = ?, surname = ?, birthday = ?, description = ?, profile_image = ? WHERE username = ?
+50         ");
+51         return $stmt->execute([
+52             $data['name'],
+53             $data['surname'],
+54             $data['birthday'],
+55             $data['description'], 
+56             $data['profile_image'],
+57             $username
+58         ]);
+59 ?>
+В.4 – Файл index.php
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab4/smp-pzpi-23-1-burkhan-inzhyla-lab4/index.php
+1 <?php
+2 session_start();
+3 
+4 $page = $_GET['page'] ?? '';
+5 
+6 $publicPages = ['login'];
+7 $privatePages = ['cart', 'profile', 'products'];
+8 
+9 if (in_array($page, $publicPages)) {
+10     require_once("$page.php");
+11 } elseif (isset($_SESSION['user']) && in_array($page, $privatePages)) {
+12     require_once("$page.php");
+13 } else {
+14     require_once("page404.php");
+15 }
+16 
+17 
+18 ?>
+
+
+
+В.5 – Файл сторінки 404
+GitHub репозиторій: https://github.com/NureBurkhanInzhyla/smp-pzpi-23-1-burkhan-inzhyla/blob/main/Lab3/smp-pzpi-23-1-burkhan-inzhyla-lab3/index.php
+1 <!DOCTYPE html>
+2 <html lang="ru">
+3 <head>
+4   <meta charset="UTF-8">
+5   <title>Page404</title>
+6 
+7   <link rel="preconnect" href="https://fonts.googleapis.com">
+8   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+9   <link href="https://fonts.googleapis.com/css2?family=Agdasima:wght@400;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Radley:ital@0;1&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+10   <link rel="stylesheet" href="Lab3Styles.css">
+11 </head>
+12 <body>
+13 <header>
+14     <?php
+15         require_once 'header.php';
+16     ?>
+17 </header>
+18   <h2 style="text-align:center; margin-top: 100px;font-size:26px;">Please <a href="index.php?page=login">Login </a> first</h2>
+19 <?php require_once 'footer.php'; ?>
+20  
+21 </body>
+22 </html>
