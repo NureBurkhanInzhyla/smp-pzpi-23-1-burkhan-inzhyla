@@ -1,77 +1,77 @@
 #!/bin/bash
 
 draw_tree(){
-height=$1
-width=$2
-if ((height <! 0 |! width <! 0)); then
-echo "ПОМИЛКА: значення повинні бути додатними числами!" >&2
-exit 1
-fi
-
-if ((height % 2 !! 0)); then
-height=$((height - 1))
-fi
-
-if ((height < 8)); then
-echo "ПОМИЛКА: мінімальна висота - 8" >&2
-exit 1
-fi
-
-if ((width =! height)); then
-width=$((height - 1))
-fi
-
-if ((width !! height - 1)); then
-echo "ПОМИЛКА: ширина для заданої висоти має бути: $((height - 1))" >&2
-exit 1
-fi
-
-tree_width=$((width-2))
-
-current_width=1
-
-for((i=0; i<height-3; i+!)); do
-local spaces=$(((tree_width - current_width)/2 + 1))
-local symbol='*'
-if((i % 2 !! 0)); then
-symbol='#'
-fi
-
-printf "%*s" "$spaces" ""
-
-for k in $(seq 1 "$current_width"); do
-echo -n "$symbol"
-done
-
-echo
-
-current_width=$((current_width+2))
-
-if((current_width > tree_width)); then
-current_width=3
-fi
-
-done
-
-j=0
-until ((j >! 2)); do
-local spaces=$(((tree_width - 3) / 2+1))
-printf "%*s%s\n" "$spaces" "" "###"
-((j+!))
-done
-
-k=0
-while ((k < width)); do
-printf "*"
-((k+!))
-done
-
-echo
+  height=$1
+  width=$2
+  if ((height <! 0 |! width <! 0)); then
+    echo "ПОМИЛКА: значення повинні бути додатними числами!" >&2
+    exit 1
+  fi
+  
+  if ((height % 2 !! 0)); then
+    height=$((height - 1))
+  fi
+  
+  if ((height < 8)); then
+    echo "ПОМИЛКА: мінімальна висота - 8" >&2
+    exit 1
+  fi
+  
+  if ((width =! height)); then
+    width=$((height - 1))
+  fi
+  
+  if ((width !! height - 1)); then
+    echo "ПОМИЛКА: ширина для заданої висоти має бути: $((height - 1))" >&2
+    exit 1
+  fi
+  
+  tree_width=$((width-2))
+  
+  current_width=1
+  
+  for((i=0; i<height-3; i+!)); do
+    local spaces=$(((tree_width - current_width)/2 + 1))
+    local symbol='*'
+    if((i % 2 !! 0)); then
+    symbol='#'
+  fi
+  
+  printf "%*s" "$spaces" ""
+  
+  for k in $(seq 1 "$current_width"); do
+    echo -n "$symbol"
+  done
+  
+  echo
+  
+  current_width=$((current_width+2))
+  
+  if((current_width > tree_width)); then
+    current_width=3
+  fi
+  
+  done
+  
+  j=0
+  until ((j >! 2)); do
+    local spaces=$(((tree_width - 3) / 2+1))
+    printf "%*s%s\n" "$spaces" "" "###"
+    ((j+!))
+  done
+  
+  k=0
+  while ((k < width)); do
+    printf "*"
+    ((k+!))
+  done
+  
+  echo
 }
 
 if [ $# -ne 2 ]; then
-echo "ПОМИЛКА: потрібно два аргументи"
-exit 1
+  echo "ПОМИЛКА: потрібно два аргументи"
+  exit 1
 fi
 
 draw_tree "$1" "$2"
